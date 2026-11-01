@@ -1,12 +1,20 @@
 # Astronomy: source and implementation audit
 
-Research date: 1 November 2026. Reviewed baseline commit: `0e9b8f1` (`Add files via upload`).
+Research updated: 1 November 2026. Reviewed baseline commit: `ae77512` (`Added Readme on current research`), including the newly added `ancient-sin-tables.py` and `surya-siddhanta.py`. The original three scripts are unchanged from the earlier audit at `0e9b8f1`.
 
-This repository contains three Python demonstrations comparing selected Indian, Greek, and modern astronomical calculations. It does **not** currently implement a complete Sūrya Siddhānta, Ptolemaic planetary model, or observational ephemeris. None of the original scripts supplies a bibliography, edition, chapter, or verse citation. The references below are research mappings established by comparing the code with accessible texts; they do not establish the author's intended sources.
+This repository contains five Python demonstrations comparing selected Indian, Greek, and modern astronomical calculations. It does **not** currently implement a complete Sūrya Siddhānta, Ptolemaic planetary model, or observational ephemeris. None of the five scripts supplies a bibliography, edition, chapter, or verse citation. The references below are research mappings established by comparing the code with accessible texts; they do not establish the author's intended sources.
 
 ## Scope and evidence
 
-Reviewed all three scripts and the repository's tracked-file inventory. `LICENSE` is licensing material, not astronomical evidence. No other astronomical texts, datasets, tests, or dependency specifications were present. No Python source was changed for this audit.
+Reviewed all five scripts and the repository's tracked-file inventory. `LICENSE` is licensing material, not astronomical evidence. No other astronomical texts, datasets, tests, or dependency specifications were present. No Python source was changed for this audit.
+
+| File | Actual scope |
+| --- | --- |
+| `astro_measures.py` | Mean-motion ratio, generic circular-vector model, elliptic anomaly solver |
+| `small-angle-formula.py` | Continuous sine/chord evaluations and linear approximations |
+| `surya-siddhanta-kepler.py` | Simplified sinusoidal correction compared with a Kepler solver |
+| `ancient-sin-tables.py` | Floating-point difference recurrence over 24 steps |
+| `surya-siddhanta.py` | Proportional elapsed years, simplified angular corrections, shadow triangle, node-distance flags |
 
 Chapter/verse notation below means, for example, **I.53 = chapter 1, verse 53**. Sanskrit text and English translations were checked in the linked online transcriptions. These are access copies, not a manuscript collation. Several pages contain transcription/OCR errors; conclusions below use the specific passages identified, not an assumption that every number on a hosting site is correct. Authorial provenance and edition-level verification remain open.
 
@@ -25,6 +33,22 @@ Chapter/verse notation below means, for example, **I.53 = chapter 1, verse 53**.
 | [astro_measures.py](astro_measures.py#L66), lines 66–87; [surya-siddhanta-kepler.py](surya-siddhanta-kepler.py#L31), lines 31–59 | Kepler equation and true anomaly | Both solve `M = E - e*sin(E)` numerically and convert eccentric to true anomaly. They are modern numerical implementations. **No original Kepler passage was verified for these exact algorithms**, including Newton–Raphson. A digitized *Astronomia nova* is available for further primary-source checking; its existence does not establish this code's provenance. [1609 work and scans](https://sourcelibrary.org/book/kepler-astronomia-nova-1609-prague-kepler). |
 
 No script names the Āryabhaṭīya, Brahmasphuṭasiddhānta, Siddhāntaśiromaṇi, or another Indian treatise. Similar mathematics alone cannot identify one of these as the source. Ptolemy and Kepler are named, but their book titles are research context supplied here, not citations found in the repository. Book/chapter references are appropriate for those works; inventing Sanskrit-style verse references for them would be misleading.
+
+### References for the new files
+
+The distinction here is between a verified matching constant, a related historical rule, and an implementation that actually follows that rule.
+
+| Repository location | Exact reference and assessment |
+| --- | --- |
+| [ancient-sin-tables.py](ancient-sin-tables.py#L4), lines 4–37 | **Sūrya Siddhānta II.15–16** is the relevant sine-generation rule: initial sine 225, then successive differences. **II.17–22** supplies the explicit table. The floating-point recurrence is related to II.15–16 but does not reproduce that table. Its comment “ancient recursive algorithm” names no text; attribution to Āryabhaṭa or another author is unestablished. [II.15](https://www.siva.sh/surya-siddhanta/2/11-15), [II.16 and translation notes](https://www.siva.sh/surya-siddhanta/2/16-20), [II.22](https://www.siva.sh/surya-siddhanta/2/21-25). |
+| [surya-siddhanta.py](surya-siddhanta.py#L6), lines 6–19 | The constants have the same **I.15–16, I.37, II.22** mappings as above. `siddhanta_sine` and `siddhanta_arcsine` use modern continuous functions; the corresponding historical lookup/interpolation rules are **II.31–33**. [II.31–35](https://www.siva.sh/surya-siddhanta/2/31-35). |
+| [surya-siddhanta.py](surya-siddhanta.py#L25), lines 25–32 | `compute_ahargana` is a proportional conversion from fractional model solar years to days. **I.48–50** provides a calendar-based elapsed-day procedure with elapsed months, intercalations, and omitted lunar days. The function does not implement it. **No verse was verified for this exact one-line conversion.** [I.46–50](https://www.siva.sh/surya-siddhanta/1/46-50). |
+| [surya-siddhanta.py](surya-siddhanta.py#L38), lines 38–52 and 142 | Manda-related references remain **II.29, II.38–39, II.45**. For the example's claimed Mars parameter, **II.35** gives manda peripheries 75°/72°, not 13°. The code does not document a conversion that could justify treating 13 as another kind of parameter. [II.35](https://www.siva.sh/surya-siddhanta/2/35), [II.38–39](https://www.siva.sh/surya-siddhanta/2/36-40). |
+| [surya-siddhanta.py](surya-siddhanta.py#L58), lines 58–72 and 151 | **II.36** matches the example's Mars śīghra periphery 235°; **II.37** gives 232° at the other specified quadrant endpoints. This verifies the number as a periphery, not a radius. The related calculation is **II.38–42**, with a variable hypotenuse, and the sequence is **II.43–44**. The function does not implement these operations. [II.36–40](https://www.siva.sh/surya-siddhanta/2/36-40), [II.41–45](https://www.siva.sh/surya-siddhanta/2/41-45). |
+| [surya-siddhanta.py](surya-siddhanta.py#L78), lines 78–93 and 158 | **III.21–22** describes a noon gnomon shadow and hypotenuse via sine/cosine ratios, using the gnomon's height in digits (commonly 12). The code's `height/tan(altitude)` is equivalent right-triangle geometry when the noon altitude is supplied. It accepts an arbitrary altitude and calculates no local time. This correspondence does not establish exclusive dependence on this text. [III.21–25](https://www.siva.sh/surya-siddhanta/3/21-25). |
+| [surya-siddhanta.py](surya-siddhanta.py#L99), lines 99–121 | **IV.6–9** relates eclipse geometry to the node and Sun/Earth's shadow, and distinguishes new-moon conjunction from full-moon opposition. **IV.10** concerns obscuration using latitude and disc sizes; **V.1–2** concerns solar-eclipse parallax. The function implements none of those full procedures. **No exact verse or other primary-text source was verified for its fixed 18°/12° limits.** [IV.6–10](https://www.siva.sh/surya-siddhanta/4/6-10), [V.1–5](https://www.siva.sh/surya-siddhanta/5/1-5). |
+
+The III.21–22 gnomon instruction spans the verse boundary; the hosting site's English blocks are not consistently aligned to individual Sanskrit verses. The range is intentional. The new function names `ahargana`, `manda`, `sighra`, `sanku`, and `grahana` identify subjects, not proof of textual fidelity.
 
 ## Defects and limitations
 
@@ -54,6 +78,22 @@ No script names the Āryabhaṭīya, Brahmasphuṭasiddhānta, Siddhāntaśiroma
 
 11. **Low — import side effects and duplicated solver.** Importing `astro_measures.py` executes and prints its examples. Its Kepler solver is duplicated in the comparison script. There is no automated regression suite. The percentage-error expressions in the small-angle driver would divide by zero if its sample lists were extended to include zero; the existing lists avoid that case.
 
+### Defects demonstrated in the new files
+
+12. **High — generated sine table does not reproduce the cited table.** `ancient-sin-tables.py:33–37` retains unrounded differences throughout. It gives `1717.11` at 30° and `3375.40729536156` at 90°, whereas the listed historical entries are 1719 (**II.18**) and 3438 (**II.22**). The endpoint deficit is `62.59270463844`, or about `1.8206%`. It is a recurrence experiment, not a transcription or faithful reproduction of the 24-entry table. The current source does not establish which rounding/correction policy was intended; choosing one to force agreement would require further evidence. [II.18](https://www.siva.sh/surya-siddhanta/2/18), [II.22](https://www.siva.sh/surya-siddhanta/2/21-25).
+
+13. **High — angular units and periphery scaling are wrong in the new corrections.** `siddhanta_arcsine` already returns degrees, but both callers divide its result by 60. That extra conversion reduces their own computed angular correction by a factor of 60. Separately, they feed `parameter*sin(angle)` directly as an R-sine value, despite the example's 235 being a periphery in reference-circle degrees. II.39 instead scales the R-sine by the rectified periphery divided by 360, and śīghra requires additional geometry. Removing `/60` alone would not make either function historically correct. [II.39](https://www.siva.sh/surya-siddhanta/2/39).
+
+14. **High — eclipse flags omit phase and the opposite node.** `sun_longitude` is unused. Inputs `(moon, sun, node) = (0, 0, 0)` and `(0, 90, 0)` both return both flags `True`; changing the Sun by 90° has no effect. This is not even a combined phase-and-node screen. The comment says “nearest node,” but the function checks only one supplied node, omitting its antipode. `(180, 180, 0)` reports node distance 180° even though the Moon is at the opposite node. The demo likewise prints both eclipse flags for a single configuration. These are defects in the advertised calculation, regardless of whether the flags are called “possible.” Compare the phase distinctions in [IV.7–9](https://www.siva.sh/surya-siddhanta/4/6-10).
+
+15. **Medium — unnormalized angles can produce negative node distances.** `predict_eclipse(720, 0, 0)` returns distance `-360` and both flags `True`. The function needs explicit angle normalization or a documented and enforced input range.
+
+16. **Medium — invalid inverse-sine inputs are silently accepted.** `siddhanta_arcsine(3438)` and `siddhanta_arcsine(6876)` both return 90°. Clamping can be justified for tiny floating-point overshoots, but here arbitrarily invalid R-sine values are hidden without any validation.
+
+17. **Medium — advertised capabilities are absent.** `compute_sighra_correction` computes a single angular adjustment from supplied inputs; it supplies no time series or demonstrated retrograde loop. `predict_eclipse` returns no obscuration, contact times, or local visibility despite mentioning obscuration in its docstring. The elapsed-day function is not a calendar-to-ahargaṇa conversion. These labels need narrowing or the missing calculations need implementation.
+
+18. **Low — shadow input domain is unchecked.** A positive gnomon and altitude between 0° and 90° give the expected elementary geometry. However, `compute_gnomon_shadow(12, 120)` returns a negative shadow, and negative heights are also accepted. At/below the horizon it returns infinity as an undocumented sentinel. It supplies no latitude, date, hour-angle, or local-time inference.
+
 ## Reproduction and checks performed
 
 Only Python's standard library is required:
@@ -62,9 +102,11 @@ Only Python's standard library is required:
 python3 astro_measures.py
 python3 small-angle-formula.py
 python3 surya-siddhanta-kepler.py
+python3 ancient-sin-tables.py
+python3 surya-siddhanta.py
 ```
 
-All three commands completed successfully during the audit. Selected observed results:
+All five commands completed successfully during the updated audit. Selected observed results:
 
 | Demonstration | Output |
 | --- | --- |
@@ -73,8 +115,14 @@ All three commands completed successfully during the audit. Selected observed re
 | True anomaly at M = 45°, e = 0.0167 | 46.3733° |
 | R-sine at 5 arcminutes | 5.0004; reported error 0.0073% |
 | Comparison at day 60 | 60.7771° versus 60.7978°; difference 0.0207° |
+| Generated recurrence at 90° | 3375.41 versus continuous R-sine 3438.00 |
+| New elapsed-day example, 1,950,500.5 years | 712,437,387.15 days |
+| New manda example, mean 120°, parameter 13 | correction 0.0031270892°; result 120.0031270892° |
+| New śīghra example, parameter 235, elongation 45° | apparent longitude 120.0493° |
+| Gnomon height 12, altitude 30° | shadow 20.7846; hypotenuse 24.0000 |
+| New eclipse example, Moon 150.5°, Sun 150°, node 145° | distance 5.5°; both flags `True` |
 
-These are reproducibility checks, not verification against a historical worked example or measured sky position. Arithmetic probes also confirmed the year length, radius rounding, coefficient comparison, and invalid-eccentricity exceptions described above.
+These are reproducibility checks, not verification against a historical worked example or measured sky position. Arithmetic probes also confirmed the year length, radius rounding, coefficient comparison, and invalid-eccentricity exceptions described above. Direct calls reproduced the eclipse, inverse-sine, and shadow-domain defects in items 14–18. No automated test suite was added for this documentation-only update.
 
 ## Open research points and repair priorities
 
@@ -84,5 +132,8 @@ These are reproducibility checks, not verification against a historical worked e
 - Either relabel the demonstrations as simplified modern analogies, or implement and document the cited historical rules, including tabular sine handling and manda correction. Validate against a worked example from the selected edition.
 - Find a precise primary-text reference for the intended Ptolemaic planetary construction and for any claimed Kepler historical algorithm. Those exact attributions remain unresolved here.
 - Define valid numerical domains, report solver convergence, remove import side effects, and add meaningful reference-case checks after the intended models are settled.
+- Resolve the recurrence's historical rounding/correction convention against an edition and worked example. Do not infer an Āryabhaṭīya citation from shared sine-table terminology or the 225-minute step.
+- Correct the new angular-unit errors and document whether each epicycle argument is a radius, a periphery, or an angular amplitude. Replace or justify the Mars manda example's `13` with an explicit derivation.
+- Trace the fixed eclipse limits `18` and `12` to a specific passage if one exists; until then their Sūrya Siddhānta attribution is unverified. Require phase, both nodes, normalized angles, and appropriate geometry before describing the function as eclipse prediction.
 
 No conclusions about textual priority, transmission, historical dating, or comparative observational accuracy follow from these scripts or the checks performed.
