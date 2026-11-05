@@ -1,3 +1,69 @@
+"""
+The constants in the code represent foundational epochs, cosmic cycles, orbital frequencies, and geometric correction factors across all three astronomical systems.
+
+---
+
+### 1. Global & Time-Reference Constants
+
+* **`target_jd = 2460676.5`**: The Julian Date (JD) for January 1, 2026. This is the target point in time for which all three models calculate planetary positions.
+* **`ayanamsa = 24.18`**: The **Lahiri Ayanamsa** value for 2026. Because Indian astronomy calculates *sidereal* positions (relative to fixed background stars) and Greek/modern systems calculate *tropical* positions (relative to the vernal equinox), this constant shifts the Surya Siddhanta output by ~24.18° so they can be compared apples-to-apples.
+
+---
+
+### 2. Surya Siddhanta Constants
+
+Ancient Indian astronomy models time using massive cosmic cycles called **Mahayugas** (4.32 million solar years).
+
+* **`kali_yuga_jd = 588465.5`**: The starting Julian Date for the current cosmic age (*Kali Yuga*), traditionally set at midnight on February 18, 3102 BCE. The script measures time elapsed (*ahargana*) from this exact moment.
+* **`CIVIL_DAYS_IN_MAHAYUGA = 1577917828`**: The total number of civil (sunrise-to-sunrise) days in one complete Mahayuga according to the Surya Siddhanta.
+* **`revs` (Revolutions)**: The exact integer number of times a planet orbits the zodiac in one Mahayuga. For example, the Sun (`4,320,000`) completes 4.32 million orbits, matching the number of solar years in a Mahayuga.
+* **`m_apo` (Manda Apogee)**: The position in degrees where a planet is farthest from the Earth (apogee/aphelion). This establishes the asymmetry of the orbit.
+* **`m_max` (Maximum Manda Equation)**: The maximum angular correction (in degrees) caused by orbital eccentricity (the equivalent of Kepler's equation of center).
+* **`s_revs`, `s_apo`, `s_max` (Sighra Parameters)**: Constants handling **synodic motion** (the planet's apparent loop-de-loops caused by Earth's own motion around the Sun). `s_revs` represents the planet's synodic/epicyclic revolutions in a Mahayuga, and `s_max` is the maximum size of the epicyclic correction.
+
+---
+
+### 3. Greek (Ptolemaic / Almagest) Constants
+
+* **`1448638.2` (Epoch of Nabonassar)**: February 26, 747 BCE. Ptolemy and ancient Babylonian astronomers anchored their planetary tables to the reign of King Nabonassar.
+* **`greek_params` lists `[daily_motion_deg, base_long, max_eq]**`:
+* **Daily Motion**: The average number of degrees the planet moves across the sky each day.
+* **Base Longitude**: The planet's calculated position at the exact moment of Nabonassar's epoch.
+* **Max Equation (`max_eq`)**: The peak amplitude of the epicyclic correction used to shift uniform circular motion into a variable speed matching observations.
+
+
+* **Anomaly offsets (e.g., `45.0`, `70.0`, `110.0`)**: Geometric phase shifts used in the script to approximate the angular distance between the planet's deferent center and its epicycle or solar alignment.
+
+---
+
+### 4. Modern IAU Constants
+
+* **`2451545.0` (J2000.0 Epoch)**: Noon on January 1, 2000. Modern dynamical astronomy uses this exact Julian Date as the zero-point for all time calculations.
+* **`36525.0`**: The number of days in a **Julian century** ($365.25 \times 100$). The variable `d_centuries` measures how many centuries have passed since January 1, 2000.
+* **Polynomial Coefficients (e.g., `280.46646 + 36000.76983 * d_centuries`)**: Empirical formulas derived from high-precision numerical integration of the solar system. The first number is the planet's mean longitude at J2000.0, and the second number is its secular rate of motion per century, accounting for long-term gravitational interactions.
+
+### 1. The Greek (Ptolemaic) Constants
+
+The numbers in `greek_params` originate directly from **Claudius Ptolemy’s *Almagest*** (written around 150 CE) and the centuries of Babylonian observational data that preceded it.
+
+* **The Epoch (Nabonassar):** The baseline date used in the script (`Feb 26, 747 BCE`, Julian Date `1448638.2`) is the **Era of Nabonassar**. Ptolemy chose this historical starting point because it marked the beginning of reliable, continuous Babylonian king-lists and eclipse records available to Greek astronomers.
+* **Daily Motions & Max Equations:** In the *Almagest* (specifically Books III through XIII), Ptolemy calculated precise tables of mean motion for each planet and the maximum angular deviations (equations) caused by their epicycles and eccentric paths.
+* **In the Script:** The author of this script extracted or approximated Ptolemy’s tabulated daily rates (e.g., the Sun’s mean motion of ~0.9856°/day) and maximum equations (e.g., Mars' whopping 39.5° maximum equation) and hardcoded them into a compact Python dictionary to simulate a simplified geocentric calculation.
+
+---
+
+### 2. The Modern IAU Constants
+
+The numbers in `modern_planets` come from **modern analytical planetary theories** adopted by the **International Astronomical Union (IAU)**.
+
+* **The Foundation (Newcomb & VSOP):** In the late 19th century, Canadian-American astronomer **Simon Newcomb** calculated comprehensive analytical theories for the motions of all the major planets. In the late 20th century, these were refined by modern theories like **VSOP87** (Variations Séculaires des Orbites Planétaires), developed by French astronomers at the Bureau des Longitudes.
+* **Where You Find Them Today:** These exact polynomial coefficients (e.g., the Sun's formula `280.46646 + 36000.76983 * d_centuries`) are standard reference formulas published in astronomical handbooks, most notably **Jean Meeus’s *Astronomical Algorithms*** and the *Explanatory Supplement to the Astronomical Almanac*.
+* **How They Work:**
+* The **first constant** (e.g., `280.46646°` for the Sun) is the planet's exact geometric mean longitude at the J2000.0 epoch (January 1, 2000, at 12:00 Terrestrial Time).
+* The **second constant** (multiplied by `d_centuries`) is the planet's mean speed expressed in degrees per Julian century, incorporating long-term gravitational perturbations from other planets.
+
+"""
+
 import numpy as np
 
 target_jd = 2460676.5  # January 1, 2026
